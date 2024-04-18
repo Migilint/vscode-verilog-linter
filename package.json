@@ -1,9 +1,9 @@
 {
-  "name": "veriloghdl4hackaton",
+  "name": "veriloghdl",
   "displayName": "Verilog-HDL/SystemVerilog/Bluespec SystemVerilog",
   "description": "Verilog-HDL/SystemVerilog/Bluespec SystemVerilog support for VS Code",
-  "version": "1.14.4",
-  "publisher": "Migilint",
+  "version": "1.13.3",
+  "publisher": "mshr-h",
   "homepage": "https://github.com/mshr-h/vscode-verilog-hdl-support",
   "repository": {
     "type": "git",
