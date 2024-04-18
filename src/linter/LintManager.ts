@@ -3,6 +3,7 @@ import * as vscode from 'vscode';
 import BaseLinter from './BaseLinter';
 import IcarusLinter from './IcarusLinter';
 import ModelsimLinter from './ModelsimLinter';
+import QuestasimLinter from './QuestasimLinter';
 import VerilatorLinter from './VerilatorLinter';
 import SlangLinter from './SlangLinter';
 import XvlogLinter from './XvlogLinter';
@@ -42,6 +43,11 @@ export default class LintManager {
           this.diagnosticCollection,
           this.logger.getChild('ModelsimLinter')
         );
+      case "questasim":
+        return new QuestasimLinter(
+          this.diagnosticCollection,
+          this.logger.getChild('QuestasimLinter')
+        )
       case 'verilator':
         return new VerilatorLinter(
           this.diagnosticCollection,
@@ -118,6 +124,10 @@ export default class LintManager {
         {
           label: 'modelsim',
           description: 'Modelsim',
+        },
+        {
+          label: 'questasim',
+          description: "Questasim"
         },
         {
           label: 'verilator',

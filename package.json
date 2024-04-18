@@ -237,11 +237,12 @@
             "iverilog",
             "verilator",
             "modelsim",
+            "questasim",
             "slang",
             "none"
           ],
           "default": "none",
-          "description": "Select the verilog linter. Possible values are 'iverilog', 'verilator', 'modelsim', 'xvlog', 'slang' or 'none'."
+          "description": "Select the verilog linter. Possible values are 'iverilog', 'verilator', 'modelsim', 'questasim', 'xvlog', 'slang' or 'none'."
         },
         "verilog.linting.iverilog.arguments": {
           "scope": "window",
@@ -516,6 +517,54 @@
           "type": "string",
           "default": "",
           "description": "[Experimental] Add custom arguments to verible-verilog-format for formatting."
+        },
+        "verilog.linting.questasim.lst_files": {
+          "scope": "window",
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true,
+          "description": "A list of included a .lst files."
+        }, 
+        "verilog.linting.questasim.incdirs_count": {
+          "scope": "window",
+          "type": "number",
+          "default": 0,
+          "description": "counter of incdirs"
+        },
+        "verilog.linting.questasim.incdirs": {
+          "scope": "window",
+          "type": "array",
+          "items": {
+          "type": "string"
+          },
+          "uniqueItems": true,
+          "description": "A list of included dirs to the vlog project."
+        },
+        "verilog.linting.questasim.compile_file": {
+          "scope": "window",
+          "type": "string",
+          "default": "",
+          "description": "A path of the compile.log from a vlog."
+        },
+        "verilog.linting.questasim.build_dir": {
+          "scope": "window",
+          "type": "string",
+          "default": "",
+          "description": "A path of the build folder."
+        },
+        "verilog.linting.questasim.work_dir": {
+          "scope": "window",
+          "type": "string",
+          "default": "",
+          "description": "A path of the work folder of files."
+        },
+        "verilog.linting.questasim.arguments": {
+          "scope": "window",
+          "type": "string",
+          "default": "",
+          "description": "A arguments to some args for vlog _D"
         }
       }
     },
