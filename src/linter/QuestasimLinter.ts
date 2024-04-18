@@ -52,8 +52,16 @@ export default class ModelsimLinter extends BaseLinter {
   protected convertToSeverity(severityString: string): vscode.DiagnosticSeverity {
     switch (severityString) {
       case 'Error':
+      case 'error':
+      case 'Undefined':
+      case 'Invalid':
+      case 'Illegal':
+      case 'Extra semicolon':
+      case 'is allowed':
+      case 'Identifier':
         return vscode.DiagnosticSeverity.Error;
       case 'Warning':
+      case 'warning':
         return vscode.DiagnosticSeverity.Warning;
     }
     return vscode.DiagnosticSeverity.Information;
@@ -100,33 +108,48 @@ export default class ModelsimLinter extends BaseLinter {
 
         // ^\*\* (((Error)|(Warning))( \(suppressible\))?: )(\([a-z]+-[0-9]+\) )?([^\(]*\(([0-9]+)\): )(\([a-z]+-[0-9]+\) )?((((near|Unknown identifier|Undefined variable):? )?["']([\w:;\.]+)["'][ :.]*)?.*)
         // From https://github.com/dave2pi/SublimeLinter-contrib-vlog/blob/master/linter.py
-        let regexExp =
-          '^\\*\\* (((Error)|(Warning))( \\(suppressible\\))?: )(\\([a-z]+-[0-9]+\\) )?([^\\(]*)\\(([0-9]+)\\): (\\([a-z]+-[0-9]+\\) )?((((near|Unknown identifier|Undefined variable):? )?["\']([\\w:;\\.]+)["\'][ :.]*)?.*)';
+
+        //     ([Ee]rror|[Ww]arning) - тип ошибки
+        //     (\.sv|\.v)([\(](\d+)([:.]\d+)?[\)]) - номера строк (от и до, какой символ.)
+        //     ((\.sv|\.v)([\(](\d+)([:.]\d+)?[\)])|Error|Warning):(.+) - сообщения
+        //     (:|(at)).+(\.sv|\.v)([\(](\d+)([:.]\d+)?[\)]) - название файла
+
+        // let regexExp =
+          // '^\\*\\* (((Error)|(Warning))( \\(suppressible\\))?: )(\\([a-z]+-[0-9]+\\) )?([^\\(]*)\\(([0-9]+)\\): (\\([a-z]+-[0-9]+\\) )?((((near|Unknown identifier|Undefined variable):? )?["\']([\\w:;\\.]+)["\'][ :.]*)?.*)';
         // Parse output lines
-        let regexExp2 = /[ \w-]+\./g;
+        let regexExp_nameFiles = /[ \w-]+\.[sv|s]/g;
+        let regexExp_typeError = /([Ee]rror|[Ww]arning|Undefined|Invalid|Illegal|Extra semicolon|is allowed|Identifier)/g;
+        let regexExp_lineNumber = /(\.sv|\.v)([\(](\d+)([:.]\d+)?[\)])/g;
+        let regexExp_msg = /((\.sv|\.v)([\(](\d+)([:.]\d+)?[\)])|Error|Warning):(.+)/g;
         // Parsing filenames from paths
         lines.forEach((line, _) => {
           if (line.startsWith('**')) {
             try {
-              let m = line.match(regexExp);
-              this.logger.info(String(m))
-              this.logger.info(String(m[8]))
-              this.logger.info(m[7])
-              this.logger.info(doc.fileName)
-              this.logger.info(String(m[8]))
-              this.logger.info(m[7].match(regexExp2)[0])
-              this.logger.info(doc.fileName.match(regexExp2)[0])
-              this.logger.info("regexExp")
-              if (m[7].match(regexExp2)[0] != doc.fileName.match(regexExp2)[0]) {
-                return;
+              // let m = line.match(regexExp); // регулярное выражение прошлого владельца
+              let nameFiles = line.match(regexExp_nameFiles); // регулярное выражение названия файла
+              let typeError = line.match(regexExp_typeError); // тип ошибки
+              let lineNumber = line.match(regexExp_lineNumber); // номер линии
+              // let msg = line.match(regexExp_msg)[0]; // думал парсить сообщения чистое, но решил, что просто ошибку в msg закину и всё
+              // this.logger.info(doc.fileName)
+              this.logger.info(nameFiles[0])
+              this.logger.info(typeError[0])
+              this.logger.info("\n")
+              // this.logger.info(doc.fileName.match(regexExp_nameFiles)[0])
+              if (nameFiles[0] != doc.fileName.match(regexExp_nameFiles)[0]) {
+                return; // если ошибки не на том файле, то их не показывать.
               }
-              let lineNum = parseInt(m[8]) - 1;
-              this.logger.info(String(lineNum))
-              let msg = m[10];
+              let lineNumStart = parseInt(lineNumber[0].match(/\d+/g)[0]) - 1;
+              let lineNumEnd = lineNumber[0].match(/([:]\d+)/g) ? parseInt(lineNumber[0].match(/([:]\d+)/g)[0].match(/\d+/g)[0]) - 1 : lineNumStart;
+              this.logger.info(lineNumber[0])
+              this.logger.info(lineNumber[0].match(/\d+/g)[0])
+              this.logger.info(String(lineNumStart))
+              this.logger.info(String(lineNumEnd))
+              this.logger.info(line)
+              // let msg = m[10];
               diagnostics.push({
-                severity: this.convertToSeverity(m[2]),
-                range: new vscode.Range(lineNum, 0, lineNum, Number.MAX_VALUE),
-                message: msg,
+                severity: this.convertToSeverity(typeError[0]),
+                range: new vscode.Range(lineNumStart, 0, lineNumEnd, Number.MAX_VALUE),
+                message: line,
                 code: 'questasim',
                 source: 'questasim',
               });
